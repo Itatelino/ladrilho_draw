@@ -17,7 +17,6 @@ class TileShopApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        // Usando a fonte Inter, se disponível no sistema, ou fallback para Roboto
         fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.blueGrey,
@@ -107,10 +106,10 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     //Tile(id: '5', name: 'Diagonal Simples', svgPath: 'assets/tiles/tile5.svg'),
   ];
 
-  Tile? _selectedTile; // Ladrilho atualmente selecionado
+  Tile? _selectedTile; // Ladrilho atualmente selecionado e em destaque
 
   // Cores para o SVG do ladrilho
-  Color _selectedTileColor = Colors.blueGrey;
+  Color _selectedTileColor = Colors.blueGrey.shade700;
   final List<Color> _tileColorOptions = [
     Colors.red.shade700,
     Colors.green.shade700,
@@ -124,6 +123,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Colors.pink.shade700,
     Colors.brown.shade700,
     Colors.indigo.shade700,
+    Colors.cyan.shade700,
+    Colors.lime.shade700,
+    Colors.amber.shade700,
+    Colors.deepOrange.shade700,
+    Colors.grey.shade700,
   ];
 
   // Cores de fundo do ladrilho
@@ -141,6 +145,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Colors.teal.shade100,
     Colors.pink.shade100,
     Colors.brown.shade100,
+    Colors.indigo.shade100,
+    Colors.cyan.shade100,
+    Colors.lime.shade100,
+    Colors.amber.shade100,
+    Colors.deepOrange.shade100,
   ];
 
   final TextEditingController _widthController = TextEditingController();
@@ -152,12 +161,29 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
   final List<CartItem> _cartItems = []; // Lista de itens no carrinho
 
+  // Controladores para os PageViews
+  final PageController _tilePageController = PageController(
+    viewportFraction: 0.3,
+  );
+  final PageController _tileColorPageController = PageController(
+    viewportFraction: 0.2,
+  );
+  final PageController _backgroundColorPageController = PageController(
+    viewportFraction: 0.2,
+  );
+
   @override
   void initState() {
     super.initState();
-    _selectedTile =
-        _availableTiles.first; // Seleciona o primeiro ladrilho por padrão
-    // Adiciona listeners para atualizar a quantidade calculada dinamicamente
+    // Inicializa o ladrilho selecionado para o primeiro item
+    _selectedTile = _availableTiles.first;
+
+    // Inicializa os PageControllers para exibir o item selecionado inicialmente
+    _tilePageController.addListener(_onTilePageChanged);
+    _tileColorPageController.addListener(_onTileColorPageChanged);
+    _backgroundColorPageController.addListener(_onBackgroundColorPageChanged);
+
+    // Configura listeners para atualizar a quantidade calculada dinamicamente
     _widthController.addListener(_updateCalculatedQuantity);
     _heightController.addListener(_updateCalculatedQuantity);
     _totalSqMetersController.addListener(_updateCalculatedQuantity);
@@ -165,31 +191,94 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
   @override
   void dispose() {
+    _tilePageController.removeListener(_onTilePageChanged);
+    _tileColorPageController.removeListener(_onTileColorPageChanged);
+    _backgroundColorPageController.removeListener(
+      _onBackgroundColorPageChanged,
+    );
+
     _widthController.removeListener(_updateCalculatedQuantity);
     _heightController.removeListener(_updateCalculatedQuantity);
     _totalSqMetersController.removeListener(_updateCalculatedQuantity);
+
     _widthController.dispose();
     _heightController.dispose();
     _totalSqMetersController.dispose();
+    _tilePageController.dispose();
+    _tileColorPageController.dispose();
+    _backgroundColorPageController.dispose();
     super.dispose();
   }
 
+  /// Callback para quando a página do carrossel de ladrilhos muda.
+  void _onTilePageChanged() {
+    if (_tilePageController.page != null) {
+      int currentPage = _tilePageController.page!.round();
+      if (currentPage >= 0 && currentPage < _availableTiles.length) {
+        setState(() {
+          _selectedTile = _availableTiles[currentPage];
+        });
+      }
+    }
+  }
+
+  /// Callback para quando a página do carrossel de cor principal (SVG) muda.
+  void _onTileColorPageChanged() {
+    if (_tileColorPageController.page != null) {
+      int currentPage = _tileColorPageController.page!.round();
+      if (currentPage >= 0 && currentPage < _tileColorOptions.length) {
+        setState(() {
+          _selectedTileColor = _tileColorOptions[currentPage];
+        });
+      }
+    }
+  }
+
+  /// Callback para quando a página do carrossel de cor de fundo muda.
+  void _onBackgroundColorPageChanged() {
+    if (_backgroundColorPageController.page != null) {
+      int currentPage = _backgroundColorPageController.page!.round();
+      if (currentPage >= 0 && currentPage < _backgroundColorOptions.length) {
+        setState(() {
+          _selectedBackgroundColor = _backgroundColorOptions[currentPage];
+        });
+      }
+    }
+  }
+
   /// Atualiza a quantidade de ladrilhos calculada com base nas entradas.
+  /// As dimensões do ladrilho são esperadas em centímetros (cm)
+  /// e a área total é esperada em metros quadrados (m²).
   void _updateCalculatedQuantity() {
-    double? width = double.tryParse(_widthController.text);
-    double? height = double.tryParse(_heightController.text);
+    double? widthCm = double.tryParse(_widthController.text);
+    double? heightCm = double.tryParse(_heightController.text);
     double? totalSqMeters = double.tryParse(_totalSqMetersController.text);
 
-    if (width != null &&
-        height != null &&
+    if (widthCm != null &&
+        heightCm != null &&
         totalSqMeters != null &&
-        width > 0 &&
-        height > 0 &&
+        widthCm > 0 &&
+        heightCm > 0 &&
         totalSqMeters > 0) {
-      double tileArea = width * height; // Área de um único ladrilho
-      setState(() {
-        _calculatedQuantity = (totalSqMeters / tileArea).ceil();
-      });
+      // Converte as dimensões do ladrilho de centímetros para metros
+      double widthMeters = widthCm / 100.0;
+      double heightMeters = heightCm / 100.0;
+
+      double tileAreaMeters =
+          widthMeters * heightMeters; // Área de um único ladrilho em m²
+
+      if (tileAreaMeters > 0) {
+        // Calcula a quantidade de ladrilhos necessária, arredondando para cima
+        int quantity = (totalSqMeters / tileAreaMeters).ceil();
+        setState(() {
+          _calculatedQuantity = quantity;
+        });
+      } else {
+        setState(() {
+          _calculatedQuantity =
+              0; // Se a área do ladrilho for zero, não há quantidade válida
+        });
+      }
     } else {
       setState(() {
         _calculatedQuantity = 0; // Reseta se as entradas são inválidas
@@ -219,15 +308,15 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       return;
     }
 
-    double? width = double.tryParse(_widthController.text);
-    double? height = double.tryParse(_heightController.text);
+    double? widthCm = double.tryParse(_widthController.text);
+    double? heightCm = double.tryParse(_heightController.text);
     double? totalSqMeters = double.tryParse(_totalSqMetersController.text);
 
-    if (width == null ||
-        height == null ||
+    if (widthCm == null ||
+        heightCm == null ||
         totalSqMeters == null ||
-        width <= 0 ||
-        height <= 0 ||
+        widthCm <= 0 ||
+        heightCm <= 0 ||
         totalSqMeters <= 0) {
       _showMessage('Por favor, insira dimensões e a área total em m² válidas.');
       return;
@@ -240,12 +329,13 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       return;
     }
 
+    // Passa as dimensões originais em CM para o CartItem, mas para o cálculo usa as em metros.
     final newItem = CartItem(
       tile: _selectedTile!,
       selectedTileColor: _selectedTileColor,
       selectedBackgroundColor: _selectedBackgroundColor,
-      width: width,
-      height: height,
+      width: widthCm, // Mantém em CM para exibição no carrinho, se desejar
+      height: heightCm, // Mantém em CM para exibição no carrinho, se desejar
       totalSqMeters: totalSqMeters,
       quantity: _calculatedQuantity, // Usar a quantidade já calculada
     );
@@ -267,9 +357,20 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CartScreen(cartItems: _cartItems),
+        builder: (context) => CartScreen(
+          cartItems: _cartItems,
+          onRemoveItem: _removeItemFromCart,
+        ),
       ),
     );
+  }
+
+  /// Remove um item do carrinho.
+  void _removeItemFromCart(CartItem item) {
+    setState(() {
+      _cartItems.remove(item);
+    });
+    _showMessage('Item removido do carrinho.');
   }
 
   @override
@@ -322,152 +423,302 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            SizedBox(
-              height:
-                  130, // Altura ajustada para caber os cartões dos ladrilhos
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _availableTiles.length,
-                itemBuilder: (context, index) {
-                  final tile = _availableTiles[index];
-                  return GestureDetector(
-                    onTap: () {
+            // Carrossel de ladrilhos
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height:
+                      130, // Altura ajustada para caber os cartões dos ladrilhos
+                  child: PageView.builder(
+                    controller: _tilePageController,
+                    itemCount: _availableTiles.length,
+                    onPageChanged: (index) {
                       setState(() {
-                        _selectedTile = tile;
+                        _selectedTile =
+                            _availableTiles[index]; // O ladrilho no centro se torna o selecionado
                       });
                     },
-                    child: Card(
-                      elevation: _selectedTile?.id == tile.id ? 10 : 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        side: _selectedTile?.id == tile.id
-                            ? BorderSide(
-                                color: Theme.of(context).primaryColor,
-                                width: 4,
-                              )
-                            : BorderSide.none,
-                      ),
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Container(
-                        width: 100, // Largura fixa para cada ladrilho na lista
-                        padding: const EdgeInsets.all(8.0),
-                        color: _selectedTile?.id == tile.id
-                            ? _selectedBackgroundColor // Prévia com a cor de fundo selecionada
-                            : Colors.transparent, // Ou uma cor padrão
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SvgPicture.asset(
-                              tile.svgPath,
-                              width: 60,
-                              height: 60,
-                              // Aplica a cor selecionada como um filtro,
-                              // colorindo todas as partes não transparentes do SVG.
-                              colorFilter: _selectedTile?.id == tile.id
-                                  ? ColorFilter.mode(
-                                      _selectedTileColor,
-                                      BlendMode.srcIn,
-                                    )
-                                  : null, // Apenas o ladrilho selecionado mostra a prévia da cor
+                    itemBuilder: (context, index) {
+                      final tile = _availableTiles[index];
+                      // O AnimatedScale irá animar o tamanho do ladrilho selecionado
+                      return AnimatedScale(
+                        scale: _selectedTile?.id == tile.id
+                            ? 1.08
+                            : 1.0, // Aumenta o tamanho se selecionado
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        child: Card(
+                          elevation: _selectedTile?.id == tile.id ? 10 : 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            side: _selectedTile?.id == tile.id
+                                ? BorderSide(
+                                    color: Theme.of(context).primaryColor,
+                                    width: 4,
+                                  )
+                                : BorderSide.none,
+                          ),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Container(
+                            width:
+                                100, // Largura fixa para cada ladrilho na lista
+                            padding: const EdgeInsets.all(8.0),
+                            color: _selectedTile?.id == tile.id
+                                ? _selectedBackgroundColor // Prévia com a cor de fundo selecionada
+                                : Colors.transparent, // Ou uma cor padrão
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  tile.svgPath,
+                                  width: 60,
+                                  height: 60,
+                                  // Aplica a cor selecionada como um filtro,
+                                  // colorindo todas as partes não transparentes do SVG.
+                                  colorFilter: _selectedTile?.id == tile.id
+                                      ? ColorFilter.mode(
+                                          _selectedTileColor,
+                                          BlendMode.srcIn,
+                                        )
+                                      : null, // Apenas o ladrilho selecionado mostra a prévia da cor
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  tile.name,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 12),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              tile.name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 12),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                      );
+                    },
+                  ),
+                ),
+                // Botão de rolagem para a esquerda
+                Positioned(
+                  left: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      size: 30,
+                      color: Color.fromARGB(255, 24, 63, 1),
                     ),
-                  );
-                },
-              ),
+                    onPressed: () {
+                      _tilePageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+                // Botão de rolagem para a direita
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 30,
+                      color: Color.fromARGB(255, 2, 56, 16),
+                    ),
+                    onPressed: () {
+                      _tilePageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
               child: Divider(),
             ),
             const Text(
-              'Escolha uma cor principal:',
+              'Escolha a cor principal:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _tileColorOptions.length,
-                itemBuilder: (context, index) {
-                  final color = _tileColorOptions[index];
-                  return GestureDetector(
-                    onTap: () {
+            // Carrossel de cores principais (SVG)
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 50,
+                  child: PageView.builder(
+                    controller: _tileColorPageController,
+                    itemCount: _tileColorOptions.length,
+                    onPageChanged: (index) {
                       setState(() {
-                        _selectedTileColor = color;
+                        _selectedTileColor =
+                            _tileColorOptions[index]; // A cor no centro se torna a selecionada
                       });
                     },
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: _selectedTileColor == color
-                            ? Border.all(color: Colors.black, width: 4)
-                            : null,
-                      ),
+                    itemBuilder: (context, index) {
+                      final color = _tileColorOptions[index];
+                      return Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            _tileColorPageController.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                            setState(() {
+                              _selectedTileColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: _selectedTileColor == color
+                                  ? Border.all(color: Colors.black, width: 4)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      size: 25,
+                      color: Color.fromARGB(255, 3, 58, 85),
                     ),
-                  );
-                },
-              ),
+                    onPressed: () {
+                      _tileColorPageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 25,
+                      color: Color.fromARGB(255, 8, 59, 85),
+                    ),
+                    onPressed: () {
+                      _tileColorPageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
               child: Divider(),
             ),
             const Text(
-              'Escolha uma cor de fundo:',
+              'Escolha a cor de fundo:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _backgroundColorOptions.length,
-                itemBuilder: (context, index) {
-                  final color = _backgroundColorOptions[index];
-                  return GestureDetector(
-                    onTap: () {
+            // Carrossel de cores de fundo
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 50,
+                  child: PageView.builder(
+                    controller: _backgroundColorPageController,
+                    itemCount: _backgroundColorOptions.length,
+                    onPageChanged: (index) {
                       setState(() {
-                        _selectedBackgroundColor = color;
+                        _selectedBackgroundColor =
+                            _backgroundColorOptions[index]; // A cor no centro se torna a selecionada
                       });
                     },
-                    child: Container(
-                      width: 45,
-                      height: 45,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: _selectedBackgroundColor == color
-                            ? Border.all(color: Colors.black, width: 4)
-                            : null,
-                      ),
+                    itemBuilder: (context, index) {
+                      final color = _backgroundColorOptions[index];
+                      return Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            _backgroundColorPageController.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                            setState(() {
+                              _selectedBackgroundColor = color;
+                            });
+                          },
+                          child: Container(
+                            width: 45,
+                            height: 45,
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: _selectedBackgroundColor == color
+                                  ? Border.all(color: Colors.black, width: 4)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      size: 25,
+                      color: Color.fromARGB(255, 4, 48, 70),
                     ),
-                  );
-                },
-              ),
+                    onPressed: () {
+                      _backgroundColorPageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 25,
+                      color: Color.fromARGB(255, 2, 40, 59),
+                    ),
+                    onPressed: () {
+                      _backgroundColorPageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
               child: Divider(),
             ),
             const Text(
-              'Uau! Veja uma prévia do seu Ladrilho!',
+              'Prévia do Ladrilho Selecionado:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -502,7 +753,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Dimensões do Ladrilho (em cm):',
+              'Dimensões do Ladrilho (em cm):', // Atualizado para cm
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -513,8 +764,8 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _widthController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Largura (ex: 0.5)',
-                      hintText: '0.00',
+                      labelText: 'Largura (ex: 10)', // Exemplo em cm
+                      hintText: '0',
                     ),
                   ),
                 ),
@@ -524,8 +775,8 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _heightController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Altura (ex: 0.5)',
-                      hintText: '0.00',
+                      labelText: 'Altura (ex: 10)', // Exemplo em cm
+                      hintText: '0',
                     ),
                   ),
                 ),
@@ -553,7 +804,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey,
+                  color: Color.fromARGB(255, 0, 89, 255),
                 ),
               ),
             ),
@@ -564,7 +815,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 icon: const Icon(Icons.add_shopping_cart, size: 28),
                 label: const Text('Adicionar ao Carrinho'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey,
+                  backgroundColor: const Color.fromARGB(255, 4, 238, 55),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(
                     double.infinity,
@@ -584,8 +835,13 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 /// A tela do carrinho, mostrando os itens adicionados e a opção de enviar o pedido.
 class CartScreen extends StatelessWidget {
   final List<CartItem> cartItems;
+  final Function(CartItem) onRemoveItem; // Callback para remover item
 
-  const CartScreen({super.key, required this.cartItems});
+  const CartScreen({
+    super.key,
+    required this.cartItems,
+    required this.onRemoveItem,
+  });
 
   /// Envia os detalhes do pedido via WhatsApp.
   Future<void> _sendOrderViaWhatsApp(BuildContext context) async {
@@ -619,7 +875,8 @@ class CartScreen extends StatelessWidget {
       message += '  Ladrilho: ${item.tile.name}\n';
       message += '  Cor Principal (SVG): #$tileColorHex\n';
       message += '  Cor de Fundo: #$bgColorHex\n';
-      message += '  Dimensões do Ladrilho: ${item.width}m x ${item.height}m\n';
+      message +=
+          '  Dimensões do Ladrilho: ${item.width}cm x ${item.height}cm\n'; // Exibe em cm no WhatsApp
       message += '  Área Total Requerida: ${item.totalSqMeters} m²\n';
       message += '  Quantidade Estimada: ${item.quantity} unidades\n';
       message += '------------------------------------\n';
@@ -628,7 +885,7 @@ class CartScreen extends StatelessWidget {
 
     // Codifica a mensagem para ser segura em uma URL.
     final Uri url = Uri.parse(
-      'https://wa.me/47992680847${Uri.encodeComponent(message)}',
+      'https://wa.me/47992680847?text=${Uri.encodeComponent(message)}',
     );
 
     // Tenta abrir o WhatsApp com a mensagem pré-preenchida.
@@ -754,8 +1011,8 @@ class CartScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      'Dimensões: ${item.width}m x ${item.height}m',
-                                    ),
+                                      'Dimensões: ${item.width}cm x ${item.height}cm',
+                                    ), // Exibe em cm
                                     Text(
                                       'Área Total: ${item.totalSqMeters} m²',
                                     ),
@@ -768,6 +1025,14 @@ class CartScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                              // Botão de remover item
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () => onRemoveItem(item),
+                              ),
                             ],
                           ),
                         ),
@@ -779,7 +1044,7 @@ class CartScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton.icon(
                     onPressed: () => _sendOrderViaWhatsApp(context),
-                    icon: const Icon(Icons.send, size: 28),
+                    //icon: const Icon(Icons.whatsapp, size: 28),
                     label: const Text('Enviar Pedido por WhatsApp'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(
