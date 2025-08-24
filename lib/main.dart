@@ -502,7 +502,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Dimensões do Ladrilho (em metros):',
+              'Dimensões do Ladrilho (em centímetros):',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -513,7 +513,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _widthController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Largura (ex: 0.3)',
+                      labelText: 'Largura (ex: 0.15)',
                       hintText: '0.00',
                     ),
                   ),
@@ -524,7 +524,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _heightController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Altura (ex: 0.3)',
+                      labelText: 'Altura (ex: 0.15)',
                       hintText: '0.00',
                     ),
                   ),
