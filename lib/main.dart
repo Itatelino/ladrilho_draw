@@ -276,7 +276,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Loja de Ladrilhos'),
+        title: const Text('Ladrilhos Cores da Roça'),
         actions: [
           IconButton(
             icon: Stack(
