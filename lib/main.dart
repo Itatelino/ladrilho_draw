@@ -19,8 +19,8 @@ class TileShopApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blueGrey,
-          foregroundColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 50, 96, 248),
+          foregroundColor: Color.fromARGB(255, 250, 250, 250),
           elevation: 0,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -101,9 +101,9 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   final List<Tile> _availableTiles = [
     Tile(id: '1', name: 'Mosaico Clássico', svgPath: 'assets/tiles/tile1.svg'),
     Tile(id: '2', name: 'Padrão Geométrico', svgPath: 'assets/tiles/tile2.svg'),
-    //Tile(id: '3', name: 'Arabesco Elegante', svgPath: 'assets/tiles/tile3.svg'),
-    //Tile(id: '4', name: 'Hexagonal Moderno', svgPath: 'assets/tiles/tile4.svg'),
-    //Tile(id: '5', name: 'Diagonal Simples', svgPath: 'assets/tiles/tile5.svg'),
+    Tile(id: '3', name: 'Arabesco Elegante', svgPath: 'assets/tiles/tile3.svg'),
+    Tile(id: '4', name: 'Hexagonal Moderno', svgPath: 'assets/tiles/tile4.svg'),
+    Tile(id: '5', name: 'Diagonal Simples', svgPath: 'assets/tiles/tile5.svg'),
   ];
 
   Tile? _selectedTile; // Ladrilho atualmente selecionado e em destaque
