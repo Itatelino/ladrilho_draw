@@ -391,7 +391,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Escolha a Cor Principal (SVG):',
+              'Escolha uma cor principal:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -429,7 +429,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Escolha a Cor de Fundo:',
+              'Escolha uma cor de fundo:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -467,7 +467,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Prévia do Ladrilho Selecionado:',
+              'Uau! Veja uma prévia do seu Ladrilho!',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -502,7 +502,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Dimensões do Ladrilho (em centímetros):',
+              'Dimensões do Ladrilho (em cm):',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -513,7 +513,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _widthController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Largura (ex: 0.15)',
+                      labelText: 'Largura (ex: 0.5)',
                       hintText: '0.00',
                     ),
                   ),
@@ -524,7 +524,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     controller: _heightController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Altura (ex: 0.15)',
+                      labelText: 'Altura (ex: 0.5)',
                       hintText: '0.00',
                     ),
                   ),
