@@ -19,8 +19,8 @@ class TileShopApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color.fromARGB(255, 50, 96, 248),
-          foregroundColor: Color.fromARGB(255, 250, 250, 250),
+          backgroundColor: Colors.blueGrey,
+          foregroundColor: Colors.white,
           elevation: 0,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -126,7 +126,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Colors.cyan.shade700,
     Colors.lime.shade700,
     Colors.amber.shade700,
-    Colors.deepOrange.shade700,
     Colors.grey.shade700,
   ];
 
@@ -134,32 +133,33 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   Color _selectedBackgroundColor = Colors.white;
   final List<Color> _backgroundColorOptions = [
     Colors.white,
-    Colors.grey.shade200,
-    Colors.blue.shade100,
-    Colors.green.shade100,
-    Colors.red.shade100,
-    Colors.yellow.shade100,
-    Colors.purple.shade100,
-    Colors.orange.shade100,
-    Colors.black, // Dark background
-    Colors.teal.shade100,
-    Colors.pink.shade100,
-    Colors.brown.shade100,
-    Colors.indigo.shade100,
-    Colors.cyan.shade100,
-    Colors.lime.shade100,
-    Colors.amber.shade100,
-    Colors.deepOrange.shade100,
+    const Color.fromARGB(255, 3, 141, 255),
+    const Color.fromARGB(255, 19, 2, 255),
+    const Color.fromARGB(255, 85, 85, 85),
+    const Color.fromARGB(255, 169, 170, 170),
+    const Color.fromARGB(255, 0, 114, 4),
+    const Color.fromARGB(255, 44, 247, 122),
+    const Color.fromARGB(255, 131, 0, 253),
+    const Color.fromARGB(255, 235, 11, 34),
+    const Color.fromARGB(255, 255, 230, 3),
+    const Color.fromARGB(255, 172, 19, 199),
+    const Color.fromARGB(255, 88, 56, 7),
+    const Color.fromARGB(255, 139, 7, 7),
+    Colors.black,
+    // Dark background
+    const Color.fromARGB(255, 4, 255, 234),
+    const Color.fromARGB(255, 236, 57, 120),
+    const Color.fromARGB(255, 250, 89, 30),
   ];
 
-  final TextEditingController _widthController = TextEditingController();
-  final TextEditingController _heightController = TextEditingController();
   final TextEditingController _totalSqMetersController =
       TextEditingController();
 
   int _calculatedQuantity = 0; // Quantidade de ladrilhos calculada
 
   final List<CartItem> _cartItems = []; // Lista de itens no carrinho
+  final List<double> _availableSizes = [15.0, 17.0, 20.0];
+  double? _selectedTileSize;
 
   // Controladores para os PageViews
   final PageController _tilePageController = PageController(
@@ -177,16 +177,16 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     super.initState();
     // Inicializa o ladrilho selecionado para o primeiro item
     _selectedTile = _availableTiles.first;
+    _selectedTileSize = _availableSizes.first;
 
     // Inicializa os PageControllers para exibir o item selecionado inicialmente
     _tilePageController.addListener(_onTilePageChanged);
     _tileColorPageController.addListener(_onTileColorPageChanged);
     _backgroundColorPageController.addListener(_onBackgroundColorPageChanged);
 
-    // Configura listeners para atualizar a quantidade calculada dinamicamente
-    _widthController.addListener(_updateCalculatedQuantity);
-    _heightController.addListener(_updateCalculatedQuantity);
+    // Configura listener para atualizar a quantidade calculada dinamicamente
     _totalSqMetersController.addListener(_updateCalculatedQuantity);
+    _updateCalculatedQuantity();
   }
 
   @override
@@ -197,12 +197,8 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       _onBackgroundColorPageChanged,
     );
 
-    _widthController.removeListener(_updateCalculatedQuantity);
-    _heightController.removeListener(_updateCalculatedQuantity);
     _totalSqMetersController.removeListener(_updateCalculatedQuantity);
 
-    _widthController.dispose();
-    _heightController.dispose();
     _totalSqMetersController.dispose();
     _tilePageController.dispose();
     _tileColorPageController.dispose();
@@ -250,22 +246,15 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   /// As dimensões do ladrilho são esperadas em centímetros (cm)
   /// e a área total é esperada em metros quadrados (m²).
   void _updateCalculatedQuantity() {
-    double? widthCm = double.tryParse(_widthController.text);
-    double? heightCm = double.tryParse(_heightController.text);
     double? totalSqMeters = double.tryParse(_totalSqMetersController.text);
 
-    if (widthCm != null &&
-        heightCm != null &&
+    if (_selectedTileSize != null &&
         totalSqMeters != null &&
-        widthCm > 0 &&
-        heightCm > 0 &&
         totalSqMeters > 0) {
       // Converte as dimensões do ladrilho de centímetros para metros
-      double widthMeters = widthCm / 100.0;
-      double heightMeters = heightCm / 100.0;
-
+      double sizeMeters = _selectedTileSize! / 100.0;
       double tileAreaMeters =
-          widthMeters * heightMeters; // Área de um único ladrilho em m²
+          sizeMeters * sizeMeters; // Área de um único ladrilho quadrado em m²
 
       if (tileAreaMeters > 0) {
         // Calcula a quantidade de ladrilhos necessária, arredondando para cima
@@ -308,17 +297,14 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       return;
     }
 
-    double? widthCm = double.tryParse(_widthController.text);
-    double? heightCm = double.tryParse(_heightController.text);
     double? totalSqMeters = double.tryParse(_totalSqMetersController.text);
 
-    if (widthCm == null ||
-        heightCm == null ||
+    if (_selectedTileSize == null ||
         totalSqMeters == null ||
-        widthCm <= 0 ||
-        heightCm <= 0 ||
         totalSqMeters <= 0) {
-      _showMessage('Por favor, insira dimensões e a área total em m² válidas.');
+      _showMessage(
+        'Por favor, selecione uma dimensão e insira a área total em m² válida.',
+      );
       return;
     }
 
@@ -329,15 +315,15 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       return;
     }
 
-    // Passa as dimensões originais em CM para o CartItem, mas para o cálculo usa as em metros.
+    // O ladrilho é quadrado, então a largura e a altura são iguais.
     final newItem = CartItem(
       tile: _selectedTile!,
       selectedTileColor: _selectedTileColor,
       selectedBackgroundColor: _selectedBackgroundColor,
-      width: widthCm, // Mantém em CM para exibição no carrinho, se desejar
-      height: heightCm, // Mantém em CM para exibição no carrinho, se desejar
+      width: _selectedTileSize!,
+      height: _selectedTileSize!,
       totalSqMeters: totalSqMeters,
-      quantity: _calculatedQuantity, // Usar a quantidade já calculada
+      quantity: _calculatedQuantity,
     );
 
     setState(() {
@@ -346,8 +332,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
     _showMessage('Ladrilho "${_selectedTile!.name}" adicionado ao carrinho!');
     // Limpa os campos de entrada após adicionar ao carrinho
-    _widthController.clear();
-    _heightController.clear();
     _totalSqMetersController.clear();
     _updateCalculatedQuantity(); // Garante que a quantidade calculada seja resetada
   }
@@ -506,7 +490,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_back_ios,
                       size: 30,
-                      color: Color.fromARGB(255, 24, 63, 1),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _tilePageController.previousPage(
@@ -523,7 +507,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_forward_ios,
                       size: 30,
-                      color: Color.fromARGB(255, 2, 56, 16),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _tilePageController.nextPage(
@@ -540,11 +524,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Escolha a cor principal:',
+              'Escolha a Cor Principal:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            // Carrossel de cores principais (SVG)
+            // Carrossel de cores principais
             Stack(
               alignment: Alignment.center,
               children: [
@@ -596,7 +580,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_back_ios,
                       size: 25,
-                      color: Color.fromARGB(255, 3, 58, 85),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _tileColorPageController.previousPage(
@@ -612,7 +596,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_forward_ios,
                       size: 25,
-                      color: Color.fromARGB(255, 8, 59, 85),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _tileColorPageController.nextPage(
@@ -629,7 +613,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Escolha a cor de fundo:',
+              'Escolha a Cor de Fundo:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
@@ -685,7 +669,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_back_ios,
                       size: 25,
-                      color: Color.fromARGB(255, 4, 48, 70),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _backgroundColorPageController.previousPage(
@@ -701,7 +685,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     icon: const Icon(
                       Icons.arrow_forward_ios,
                       size: 25,
-                      color: Color.fromARGB(255, 2, 40, 59),
+                      color: Colors.blueGrey,
                     ),
                     onPressed: () {
                       _backgroundColorPageController.nextPage(
@@ -753,34 +737,38 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               child: Divider(),
             ),
             const Text(
-              'Dimensões do Ladrilho (em cm):', // Atualizado para cm
+              'Dimensões do Ladrilho:', // Atualizado para cm
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _widthController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Largura (ex: 10)', // Exemplo em cm
-                      hintText: '0',
+            Center(
+              child: ToggleButtons(
+                isSelected: _availableSizes
+                    .map((size) => size == _selectedTileSize)
+                    .toList(),
+                onPressed: (int index) {
+                  setState(() {
+                    _selectedTileSize = _availableSizes[index];
+                    _updateCalculatedQuantity();
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                borderWidth: 2,
+                selectedBorderColor: Colors.blueGrey,
+                selectedColor: Colors.white,
+                fillColor: Colors.blueGrey.shade700,
+                color: Colors.blueGrey,
+                splashColor: Colors.blueGrey.shade200,
+                children: _availableSizes.map((size) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      '${size.toInt()} cm',
+                      style: const TextStyle(fontSize: 16),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: TextField(
-                    controller: _heightController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Altura (ex: 10)', // Exemplo em cm
-                      hintText: '0',
-                    ),
-                  ),
-                ),
-              ],
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 25),
             const Text(
@@ -804,7 +792,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 0, 89, 255),
+                  color: Colors.blueGrey,
                 ),
               ),
             ),
@@ -815,7 +803,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 icon: const Icon(Icons.add_shopping_cart, size: 28),
                 label: const Text('Adicionar ao Carrinho'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 4, 238, 55),
+                  backgroundColor: Colors.blueGrey,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(
                     double.infinity,
@@ -842,6 +830,36 @@ class CartScreen extends StatelessWidget {
     required this.cartItems,
     required this.onRemoveItem,
   });
+
+  /// Exibe um diálogo de confirmação para remover um item.
+  void _showConfirmationDialog(BuildContext context, CartItem item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Remoção'),
+          content: const Text(
+            'Tem certeza de que deseja remover este item do carrinho?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                onRemoveItem(item); // Chama o callback de remoção
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('Remover', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   /// Envia os detalhes do pedido via WhatsApp.
   Future<void> _sendOrderViaWhatsApp(BuildContext context) async {
@@ -885,7 +903,7 @@ class CartScreen extends StatelessWidget {
 
     // Codifica a mensagem para ser segura em uma URL.
     final Uri url = Uri.parse(
-      'https://wa.me/47992680847?text=${Uri.encodeComponent(message)}',
+      'https://wa.me/?text=${Uri.encodeComponent(message)}',
     );
 
     // Tenta abrir o WhatsApp com a mensagem pré-preenchida.
@@ -1031,7 +1049,8 @@ class CartScreen extends StatelessWidget {
                                   Icons.delete,
                                   color: Colors.red,
                                 ),
-                                onPressed: () => onRemoveItem(item),
+                                onPressed: () =>
+                                    _showConfirmationDialog(context, item),
                               ),
                             ],
                           ),
