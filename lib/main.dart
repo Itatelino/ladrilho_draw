@@ -9,7 +9,7 @@ void main() {
   runApp(const TileShopApp());
 }
 
-/// O widget raiz do aplicativo.
+/// widget raiz do aplicativo.
 class TileShopApp extends StatelessWidget {
   const TileShopApp({super.key});
 
@@ -21,10 +21,11 @@ class TileShopApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blueGrey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        // fonte Inter para um visual moderno
         fontFamily: 'Inter',
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF333333),
-          foregroundColor: Colors.white,
+          backgroundColor: Color.fromARGB(255, 0, 45, 245),
+          foregroundColor: Color.fromARGB(255, 255, 255, 255),
           elevation: 4,
           shadowColor: Colors.black54,
         ),
@@ -50,7 +51,10 @@ class TileShopApp extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF333333), width: 2),
+            borderSide: const BorderSide(
+              color: Color.fromARGB(255, 0, 26, 255),
+              width: 2,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -65,7 +69,7 @@ class TileShopApp extends StatelessWidget {
 
 // --- Modelos de Dados ---
 
-/// Modelo de dados para um ladrilho.
+/// dados para um ladrilho.
 class Tile {
   final String id;
   final String name;
@@ -74,13 +78,14 @@ class Tile {
   Tile({required this.id, required this.name, required this.svgPath});
 }
 
-/// Modelo de dados para um item no carrinho de compras.
+/// dados para um item no carrinho de compras.
 class CartItem {
   final Tile tile;
-  final Color selectedTileColor1; // Cor Principal (P1)
-  final Color
-  selectedTileColor2; // Cor Secundária (P2) - Para vetores individuais
-  final Color selectedBackgroundColor; // Cor de Fundo (BG)
+  final Color selectedTileColor1;
+  final Color selectedTileColor2;
+  final Color selectedTileColor3;
+  final Color selectedTileColor4;
+  final Color selectedBackgroundColor;
   final double width;
   final double height;
   final double totalSqMeters;
@@ -90,6 +95,8 @@ class CartItem {
     required this.tile,
     required this.selectedTileColor1,
     required this.selectedTileColor2,
+    required this.selectedTileColor3,
+    required this.selectedTileColor4,
     required this.selectedBackgroundColor,
     required this.width,
     required this.height,
@@ -98,12 +105,12 @@ class CartItem {
   });
 }
 
-/// Modelo de dados para um ambiente de simulação.
+/// dados para um ambiente de simulação.
 class Environment {
   final String name;
   final IconData icon;
   final Color color;
-  final String imageUrl; // URL da imagem de fundo 3D
+  final String imageUrl;
 
   Environment({
     required this.name,
@@ -113,21 +120,25 @@ class Environment {
   });
 }
 
-// --- Componente de Visualização do Ladrilho (Repetição) ---
+// --- Componente de Visualização do Ladrilho ---
 
-/// Widget que repete um ladrilho em uma grade para simulação.
+/// repete um ladrilho em uma grade para simulação.
 class TilePatternRepeater extends StatelessWidget {
   final Tile tile;
   final Color tileColor1;
   final Color tileColor2;
+  final Color tileColor3;
+  final Color tileColor4;
   final Color bgColor;
   final double tileDisplaySize;
-  final bool isWall; // Parâmetro para diferenciar rejunte em parede/chão
+  final bool isWall; // diferenciar rejunte em parede/chão
 
   const TilePatternRepeater({
     required this.tile,
     required this.tileColor1,
     required this.tileColor2,
+    required this.tileColor3,
+    required this.tileColor4,
     required this.bgColor,
     this.tileDisplaySize = 40.0,
     this.isWall = false,
@@ -147,7 +158,7 @@ class TilePatternRepeater extends StatelessWidget {
       color: bgColor,
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: 25, // Grade 5x5
+        itemCount: 25,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
           childAspectRatio: 1.0,
@@ -155,21 +166,35 @@ class TilePatternRepeater extends StatelessWidget {
           crossAxisSpacing: isWall ? 0.5 : 1.0,
         ),
         itemBuilder: (context, index) {
+          // P1: Cor principal do SVG
+          // P3: cor de fundo de cada ladrilho individual na grade
+          // P4: cor de borda de cada ladrilho individual na grade
+
+          final useP4Border = index % 2 == 0;
+
           return Container(
             decoration: BoxDecoration(
-              border: Border.all(
-                color: groutColor,
-                width: isWall ? 0.5 : 1.0,
-              ), // Simula rejunte
+              // Simula o rejunte
+              border: Border.all(color: groutColor, width: isWall ? 0.5 : 1.0),
+              // Simula a borda do ladrilho com P4
+              color: tileColor3, // Fundo individual do ladrilho usa P3
             ),
-            child: Center(
-              // Na prévia visual, usamos P1 e BG. P2 será aplicada na produção final
-              // ao colorir vetores específicos dentro do SVG.
-              child: SvgPicture.asset(
-                tile.svgPath,
-                width: tileDisplaySize,
-                height: tileDisplaySize,
-                colorFilter: ColorFilter.mode(tileColor1, BlendMode.srcIn),
+            child: Container(
+              margin: EdgeInsets.all(useP4Border ? 2 : 0),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: useP4Border ? tileColor4 : tileColor3,
+                  width: 1.0,
+                ),
+              ),
+              child: Center(
+                // O SVG só pode ter uma cor, usamos P1 para o centro do desenho
+                child: SvgPicture.asset(
+                  tile.svgPath,
+                  width: tileDisplaySize,
+                  height: tileDisplaySize,
+                  colorFilter: ColorFilter.mode(tileColor1, BlendMode.srcIn),
+                ),
               ),
             ),
           );
@@ -363,7 +388,7 @@ Future<Color?> showColorPickerSheet(
   );
 }
 
-/// Função auxiliar para construir os sliders de cor.
+/// auxiliar para construir os sliders de cor.
 List<Widget> _buildColorSlider(
   String label,
   double currentValue,
@@ -413,43 +438,67 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Tile(id: '5', name: 'Diagonal Simples', svgPath: 'assets/tiles/tile5.svg'),
   ];
 
-  // Adicionando URLs de imagem de placeholder para a simulação 3D de ambiente
   final List<Environment> _availableEnvironments = [
     Environment(
       name: 'Cozinha',
       icon: Icons.kitchen,
       color: Colors.brown.shade400,
-      imageUrl: 'https://placehold.co/800x600/F0F0F0/333333?text=Cozinha+3D',
+      imageUrl: 'assets/cozinha.jpg',
     ),
     Environment(
       name: 'Banheiro',
       icon: Icons.bathtub,
       color: Colors.blue.shade400,
-      imageUrl: 'https://placehold.co/800x600/E0EFFF/333333?text=Banheiro+3D',
+      imageUrl: 'assets/banheiro.jpg',
     ),
     Environment(
       name: 'Varanda',
       icon: Icons.deck,
       color: Colors.green.shade400,
-      imageUrl: 'https://placehold.co/800x600/E8F5E9/333333?text=Varanda+3D',
+      imageUrl: 'assets/varanda.jpg',
     ),
     Environment(
       name: 'Piscina',
       icon: Icons.pool,
       color: Colors.cyan.shade400,
-      imageUrl: 'https://placehold.co/800x600/D0E0FF/333333?text=Piscina+3D',
+      imageUrl: 'assets/piscina.jpg',
     ),
   ];
 
   Tile? _selectedTile;
   Environment? _selectedEnvironment;
 
-  // Três cores para personalização
-  Color _selectedTileColor1 = const Color(0xFF546E7A); // P1 - Cor Principal
-  Color _selectedTileColor2 = const Color(
-    0xFFB0BEC5,
-  ); // P2 - Cor Secundária (Para colorir vetores)
-  Color _selectedBackgroundColor = Colors.white; // BG - Cor de Fundo
+  // personalização
+  Color _selectedTileColor1 = const Color.fromARGB(
+    255,
+    238,
+    85,
+    38,
+  ); // P1 - Nao aparece ainda
+  Color _selectedTileColor2 = const Color.fromARGB(
+    255,
+    217,
+    255,
+    3,
+  ); // P2 - Secundária
+  Color _selectedTileColor3 = const Color.fromARGB(
+    255,
+    36,
+    87,
+    255,
+  ); // P3 - Terciária
+  Color _selectedTileColor4 = const Color.fromARGB(
+    255,
+    33,
+    141,
+    0,
+  ); // P4 - Quaternária
+  Color _selectedBackgroundColor = const Color.fromARGB(
+    255,
+    235,
+    244,
+    255,
+  ); // BG - Cor de Fundo
 
   final TextEditingController _totalSqMetersController =
       TextEditingController();
@@ -469,21 +518,37 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     _selectedTile = _availableTiles.first;
     _selectedTileSize = _availableSizes.first;
     _selectedEnvironment = _availableEnvironments.first;
-    // REMOVIDO: O listener do controlador que causava loops de setState/renderização
     _totalSqMetersController.addListener(_updateCalculatedQuantity);
     _updateCalculatedQuantity();
   }
 
   @override
   void dispose() {
-    // REMOVIDO: A remoção do listener, já que ele foi removido em initState
     _totalSqMetersController.removeListener(_updateCalculatedQuantity);
     _totalSqMetersController.dispose();
     _tilePageController.dispose();
     super.dispose();
   }
 
-  // REMOVIDO: O método _onTilePageChanged() que disparava o setState durante o scroll
+  /// Avança para o ladrilho anterior no carrossel.
+  void _goToPreviousTile() {
+    if (_tilePageController.page! > 0) {
+      _tilePageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  /// Avança para o próximo ladrilho no carrossel.
+  void _goToNextTile() {
+    if (_tilePageController.page! < _availableTiles.length - 1) {
+      _tilePageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   /// Atualiza a quantidade de ladrilhos calculada com base nas entradas.
   void _updateCalculatedQuantity() {
@@ -552,6 +617,8 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       tile: _selectedTile!,
       selectedTileColor1: _selectedTileColor1,
       selectedTileColor2: _selectedTileColor2,
+      selectedTileColor3: _selectedTileColor3,
+      selectedTileColor4: _selectedTileColor4,
       selectedBackgroundColor: _selectedBackgroundColor,
       width: _selectedTileSize!,
       height: _selectedTileSize!,
@@ -586,12 +653,12 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  /// Abre o painel de seleção de cor para a cor principal (P1).
+  /// Abre o painel de seleção de cor para P1.
   void _pickTileColor1() async {
     final newColor = await showColorPickerSheet(
       context,
       _selectedTileColor1,
-      'Cor Principal (P1)',
+      'Cor Principal',
     );
     if (newColor != null) {
       setState(() {
@@ -600,12 +667,12 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para a cor secundária (P2).
+  /// Abre o painel de seleção de cor para P2.
   void _pickTileColor2() async {
     final newColor = await showColorPickerSheet(
       context,
       _selectedTileColor2,
-      'Cor Secundária (P2)',
+      'Cor Secundária',
     );
     if (newColor != null) {
       setState(() {
@@ -614,12 +681,40 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para a cor de fundo (BG).
+  /// Abre o painel de seleção de cor para P3.
+  void _pickTileColor3() async {
+    final newColor = await showColorPickerSheet(
+      context,
+      _selectedTileColor3,
+      'Cor Terciária',
+    );
+    if (newColor != null) {
+      setState(() {
+        _selectedTileColor3 = newColor;
+      });
+    }
+  }
+
+  /// Abre o painel de seleção de cor para P4.
+  void _pickTileColor4() async {
+    final newColor = await showColorPickerSheet(
+      context,
+      _selectedTileColor4,
+      'Cor Quaternária',
+    );
+    if (newColor != null) {
+      setState(() {
+        _selectedTileColor4 = newColor;
+      });
+    }
+  }
+
+  /// Abre o painel de seleção de cor para BG.
   void _pickBackgroundColor() async {
     final newColor = await showColorPickerSheet(
       context,
       _selectedBackgroundColor,
-      'Cor de Fundo (BG)',
+      'Cor de Fundo',
     );
     if (newColor != null) {
       setState(() {
@@ -678,7 +773,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
           children: [
             _buildSectionTitle('Selecionar Ladrilho'),
             const SizedBox(height: 15),
-            _buildTileCarousel(),
+            _buildTileCarousel(), // Carrossel com botões
             _buildDivider(),
 
             _buildSectionTitle('Definir Cores'),
@@ -690,10 +785,10 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
             _buildSectionTitle('Visualização em 3D'),
             const SizedBox(height: 15),
-            _build3DPreview(), // Visualização 3D aprimorada
+            _build3DPreview(), // Visualização 3D aprimorada com 4 cores simuladas
             _buildDivider(),
 
-            _buildSectionTitle('Simulação de Ambiente (Foto Realista)'),
+            _buildSectionTitle('Simulação de Ambiente'),
             const SizedBox(height: 15),
             _buildEnvironmentSelector(),
             const SizedBox(height: 20),
@@ -723,7 +818,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 icon: const Icon(Icons.add_shopping_cart, size: 28),
                 label: const Text('Adicionar ao Pedido'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF333333),
+                  backgroundColor: const Color.fromARGB(255, 0, 4, 255),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
                 ),
@@ -755,100 +850,121 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   }
 
   Widget _buildTileCarousel() {
-    return SizedBox(
-      height: 160,
-      child: PageView.builder(
-        controller: _tilePageController,
-        // Ao rolar, atualizamos o ladrilho selecionado para o que está no centro
-        onPageChanged: (index) {
-          setState(() {
-            _selectedTile = _availableTiles[index];
-          });
-        },
-        itemCount: _availableTiles.length,
-        itemBuilder: (context, index) {
-          final tile = _availableTiles[index];
-          bool isSelected = _selectedTile?.id == tile.id;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _tilePageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _selectedTile = _availableTiles[index];
+              });
+            },
+            itemCount: _availableTiles.length,
+            itemBuilder: (context, index) {
+              final tile = _availableTiles[index];
+              bool isSelected = _selectedTile?.id == tile.id;
 
-          return GestureDetector(
-            // CORREÇÃO: Usamos o onTap para garantir que a seleção seja explícita.
-            onTap: () {
-              if (!isSelected) {
-                // Se o item não estiver selecionado, atualiza o estado
-                setState(() {
-                  _selectedTile = tile;
-                });
-              }
-              // Anima para a página selecionada (mesmo que já esteja selecionada, centraliza)
-              _tilePageController.animateToPage(
-                index,
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeInOut,
+              return GestureDetector(
+                // Ao tocar, centraliza e seleciona
+                onTap: () {
+                  if (!isSelected) {
+                    setState(() {
+                      _selectedTile = tile;
+                    });
+                  }
+                  _tilePageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: AnimatedScale(
+                  scale: isSelected ? 1.15 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                  child: Card(
+                    elevation: isSelected ? 12 : 6,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: isSelected
+                          ? BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 4,
+                            )
+                          : BorderSide.none,
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            // ignore: deprecated_member_use
+                            ? _selectedBackgroundColor.withOpacity(0.9)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            tile.svgPath,
+                            width: 70,
+                            height: 70,
+                            colorFilter: ColorFilter.mode(
+                              isSelected
+                                  ? _selectedTileColor1
+                                  : Colors.grey.shade600,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            tile.name,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? Colors.black
+                                  : Colors.grey.shade800,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               );
             },
-            child: AnimatedScale(
-              scale: isSelected ? 1.15 : 1.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: Card(
-                elevation: isSelected ? 12 : 6,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: isSelected
-                      ? BorderSide(
-                          color: Theme.of(context).primaryColor,
-                          width: 4,
-                        )
-                      : BorderSide.none,
-                ),
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        // ignore: deprecated_member_use
-                        ? _selectedBackgroundColor.withOpacity(0.9)
-                        : Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        tile.svgPath,
-                        width: 70,
-                        height: 70,
-                        colorFilter: ColorFilter.mode(
-                          isSelected
-                              ? _selectedTileColor1
-                              : Colors.grey.shade600,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        tile.name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isSelected
-                              ? Colors.black
-                              : Colors.grey.shade800,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+          ),
+        ),
+
+        // Botão Esquerdo (Anterior)
+        Positioned(
+          left: 0,
+          child: _NavigationButton(
+            icon: Icons.arrow_back_ios_new,
+            onPressed: _goToPreviousTile,
+          ),
+        ),
+
+        // Botão Direito (Próximo)
+        Positioned(
+          right: 0,
+          child: _NavigationButton(
+            icon: Icons.arrow_forward_ios,
+            onPressed: _goToNextTile,
+          ),
+        ),
+      ],
     );
   }
 
@@ -860,19 +976,31 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           _ColorPickerButton(
-            title: 'P1 - Principal',
+            title: 'Principal',
             color: _selectedTileColor1,
             onTap: _pickTileColor1,
           ),
           const SizedBox(width: 20),
           _ColorPickerButton(
-            title: 'P2 - Secundária',
+            title: 'Secundária',
             color: _selectedTileColor2,
             onTap: _pickTileColor2,
           ),
           const SizedBox(width: 20),
           _ColorPickerButton(
-            title: 'Fundo (BG)',
+            title: 'Terciária',
+            color: _selectedTileColor3,
+            onTap: _pickTileColor3,
+          ),
+          const SizedBox(width: 20),
+          _ColorPickerButton(
+            title: 'Quaternária',
+            color: _selectedTileColor4,
+            onTap: _pickTileColor4,
+          ),
+          const SizedBox(width: 20),
+          _ColorPickerButton(
+            title: 'Fundo',
             color: _selectedBackgroundColor,
             onTap: _pickBackgroundColor,
           ),
@@ -906,12 +1034,15 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: _selectedBackgroundColor,
+                // prévia usa P3 para simulação
+                color: _selectedTileColor3,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _selectedTileColor1, width: 3),
+                // prévia usa P4 para simulação
+                border: Border.all(color: _selectedTileColor4, width: 3),
               ),
               child: SvgPicture.asset(
                 _selectedTile!.svgPath,
+                // SVG usa P1 para o centro do desenho
                 colorFilter: ColorFilter.mode(
                   _selectedTileColor1,
                   BlendMode.srcIn,
@@ -921,7 +1052,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
           ),
           const SizedBox(height: 5),
           const Text(
-            'Ladrilho individual com P1 e Fundo.',
+            'Ladrilho individual.',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
@@ -936,7 +1067,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       );
     }
 
-    // Aumentamos o tamanho para 300x300 e criamos a simulação de canto (chão e parede)
     return Center(
       child: Container(
         width: 300,
@@ -954,7 +1084,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
         ),
         child: Stack(
           children: [
-            // PAREDE - Parte superior (menos inclinada)
+            // PAREDE
             Positioned(
               top: 0,
               left: 0,
@@ -973,9 +1103,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     tile: _selectedTile!,
                     tileColor1: _selectedTileColor1,
                     tileColor2: _selectedTileColor2,
+                    tileColor3: _selectedTileColor3,
+                    tileColor4: _selectedTileColor4,
                     bgColor: _selectedBackgroundColor,
                     tileDisplaySize: 50.0,
-                    isWall: true, // Rejunte mais fino e claro
+                    isWall: true,
                   ),
                 ),
               ),
@@ -987,7 +1119,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               right: 0,
               child: Container(height: 4, color: Colors.black38),
             ),
-            // CHÃO - Parte inferior (mais inclinada)
+            // CHÃO
             Positioned(
               top: 150,
               left: 0,
@@ -1006,9 +1138,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                     tile: _selectedTile!,
                     tileColor1: _selectedTileColor1,
                     tileColor2: _selectedTileColor2,
+                    tileColor3: _selectedTileColor3,
+                    tileColor4: _selectedTileColor4,
                     bgColor: _selectedBackgroundColor,
                     tileDisplaySize: 50.0,
-                    isWall: false, // Rejunte mais grosso e escuro
+                    isWall: false,
                   ),
                 ),
               ),
@@ -1065,7 +1199,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       );
     }
 
-    // Container para a simulação
+    // Container pra simulação
     return Center(
       child: Card(
         elevation: 10,
@@ -1080,16 +1214,16 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
           ),
           child: Stack(
             children: [
-              // 1. Imagem de Fundo 3D do Ambiente
+              // 1. fundo 3D do Ambiente
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
+                  child: Image.asset(
                     _selectedEnvironment!.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Center(
                       child: Text(
-                        'Erro ao carregar imagem 3D de ${_selectedEnvironment!.name}.',
+                        'Erro ao carregar a imagem local: ${_selectedEnvironment!.imageUrl}. Verifique seu pubspec.yaml.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.red),
                       ),
@@ -1101,19 +1235,20 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               // 2. Tiling de Parede (Simulação de perspectiva na parte superior)
               Positioned.fill(
                 child: Opacity(
-                  opacity:
-                      0.85, // Ajuste a opacidade para misturar com o fundo 3D
+                  opacity: 0.85,
                   child: ClipPath(
                     clipper: _WallPerspectiveClipper(),
                     child: Transform(
                       alignment: Alignment.center,
                       transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.0005) // Pequena perspectiva
-                        ..rotateX(-0.1), // Inclinação para simular parede
+                        ..setEntry(3, 2, 0.0005)
+                        ..rotateX(-0.1),
                       child: TilePatternRepeater(
                         tile: _selectedTile!,
                         tileColor1: _selectedTileColor1,
                         tileColor2: _selectedTileColor2,
+                        tileColor3: _selectedTileColor3,
+                        tileColor4: _selectedTileColor4,
                         bgColor: _selectedBackgroundColor,
                         tileDisplaySize: 30.0,
                         isWall: true,
@@ -1126,19 +1261,20 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               // 3. Tiling de Chão (Simulação de perspectiva na parte inferior)
               Positioned.fill(
                 child: Opacity(
-                  opacity:
-                      0.85, // Ajuste a opacidade para misturar com o fundo 3D
+                  opacity: 0.85,
                   child: ClipPath(
                     clipper: _FloorPerspectiveClipper(),
                     child: Transform(
                       alignment: Alignment.topCenter,
                       transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.002) // Aplica perspectiva forte
-                        ..rotateX(1.1), // Inclinação para simular chão
+                        ..setEntry(3, 2, 0.002)
+                        ..rotateX(1.1),
                       child: TilePatternRepeater(
                         tile: _selectedTile!,
                         tileColor1: _selectedTileColor1,
                         tileColor2: _selectedTileColor2,
+                        tileColor3: _selectedTileColor3,
+                        tileColor4: _selectedTileColor4,
                         bgColor: _selectedBackgroundColor,
                         tileDisplaySize: 30.0,
                         isWall: false,
@@ -1251,7 +1387,34 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   }
 }
 
-/// Widget auxiliar para o botão de seleção de cor.
+/// auxiliar para o botão de navegação do carrossel.
+class _NavigationButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _NavigationButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        // ignore: deprecated_member_use
+        color: Colors.white.withOpacity(0.85),
+        shape: BoxShape.circle,
+        boxShadow: const [
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3)),
+        ],
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: const Color(0xFF333333)),
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+/// auxiliar para o botão de seleção de cor.
 class _ColorPickerButton extends StatelessWidget {
   final String title;
   final Color color;
@@ -1308,7 +1471,7 @@ class _ColorPickerButton extends StatelessWidget {
   }
 }
 
-/// Clipper personalizado para criar a forma de chão em perspectiva (trapézio inferior).
+/// criar a forma de chão em perspectiva (trapézio inferior).
 class _FloorPerspectiveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -1329,7 +1492,7 @@ class _FloorPerspectiveClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
-/// Clipper personalizado para criar a forma de parede em perspectiva (trapézio superior).
+/// criar a forma de parede em perspectiva (trapézio superior).
 class _WallPerspectiveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -1361,6 +1524,49 @@ class CartScreen extends StatelessWidget {
     required this.cartItems,
     required this.onRemoveItem,
   });
+
+  /// Mapeamento de cores comuns para nomes amigáveis em português (para o WhatsApp).
+  final Map<int, String> _commonColorNames = const {
+    // Valores baseados nas cores definidas em _paletteSuggestions
+    0xFFFFFFFF: 'Branco',
+    0xFF000000: 'Preto',
+    0xFFC70039: 'Vermelho Bordô',
+    0xFF004488: 'Azul Marinho',
+    0xFF008844: 'Verde Floresta',
+    0xFFFFA500: 'Laranja Cítrico',
+    0xFF808080: 'Cinza Chumbo',
+    0xFFF9E79F: 'Creme Claro',
+    0xFF5D4037: 'Marrom Escuro',
+    0xFF6A1B9A: 'Roxo',
+  };
+
+  String _getColorDisplay(Color color) {
+    // ignore: deprecated_member_use
+    final hexCode = color.value.toRadixString(16).substring(2).toUpperCase();
+    // ignore: deprecated_member_use
+    final colorName = _commonColorNames[color.value];
+
+    if (colorName != null) {
+      return colorName;
+    } else {
+      return 'Personalizada (#$hexCode)';
+    }
+  }
+
+  /// Retorna apenas o nome da cor ou o código HEX para a mensagem do WhatsApp.
+  String _getWhatsAppColorName(Color color) {
+    // ignore: deprecated_member_use
+    final hexCode = color.value.toRadixString(16).substring(2).toUpperCase();
+    // ignore: deprecated_member_use
+    final colorName = _commonColorNames[color.value];
+
+    if (colorName != null) {
+      return colorName; // Ex: "Branco"
+    } else {
+      // Se for personalizada, retorna apenas o código HEX como identificador
+      return '#$hexCode';
+    }
+  }
 
   /// Exibe um diálogo de confirmação para remover um item.
   void _showConfirmationDialog(BuildContext context, CartItem item) {
@@ -1415,32 +1621,27 @@ class CartScreen extends StatelessWidget {
 
     for (int i = 0; i < cartItems.length; i++) {
       final item = cartItems[i];
-      // Converte as cores para formato hexadecimal
-      // ignore: deprecated_member_use
-      String color1Hex = item.selectedTileColor1.value
-          .toRadixString(16)
-          .substring(2)
-          .toUpperCase();
-      // ignore: deprecated_member_use
-      String color2Hex = item.selectedTileColor2.value
-          .toRadixString(16)
-          .substring(2)
-          .toUpperCase();
-      // ignore: deprecated_member_use
-      String bgColorHex = item.selectedBackgroundColor.value
-          .toRadixString(16)
-          .substring(2)
-          .toUpperCase();
+
+      // Obtém o nome da cor SIMPLIFICADO para a mensagem do WhatsApp
+      String color1Name = _getWhatsAppColorName(item.selectedTileColor1);
+      String color2Name = _getWhatsAppColorName(item.selectedTileColor2);
+      String color3Name = _getWhatsAppColorName(item.selectedTileColor3);
+      String color4Name = _getWhatsAppColorName(item.selectedTileColor4);
+      String bgColorName = _getWhatsAppColorName(item.selectedBackgroundColor);
 
       message += '--- Item ${i + 1} ---\n';
       message += 'Ladrilho: ${item.tile.name}\n';
+      // Saídas simplificadas (ex: P1 (Principal): Branco)
       // ignore: unnecessary_brace_in_string_interps
-      message += 'Cor Principal: #${color1Hex}\n';
-      message +=
-          // ignore: unnecessary_brace_in_string_interps
-          'Cor Secundária: #${color2Hex} (Para colorir vetores internos)\n';
+      message += 'P1 (Principal): ${color1Name}\n';
       // ignore: unnecessary_brace_in_string_interps
-      message += 'Cor de Fundo: #${bgColorHex}\n';
+      message += 'P2 (Secundária): ${color2Name}\n';
+      // ignore: unnecessary_brace_in_string_interps
+      message += 'P3 (Terciária): ${color3Name}\n';
+      // ignore: unnecessary_brace_in_string_interps
+      message += 'P4 (Quaternária): ${color4Name}\n';
+      // ignore: unnecessary_brace_in_string_interps
+      message += 'BG (Fundo): ${bgColorName}\n';
       message += 'Dimensões: ${item.width}cm x ${item.height}cm\n';
       message +=
           'Área Requerida: ${item.totalSqMeters.toStringAsFixed(2)} m²\n';
@@ -1521,10 +1722,32 @@ class CartScreen extends StatelessWidget {
                           .substring(2)
                           .toUpperCase();
                       // ignore: deprecated_member_use
+                      String color3Hex = item.selectedTileColor3.value
+                          .toRadixString(16)
+                          .substring(2)
+                          .toUpperCase();
+                      // ignore: deprecated_member_use
+                      String color4Hex = item.selectedTileColor4.value
+                          .toRadixString(16)
+                          .substring(2)
+                          .toUpperCase();
+                      // ignore: deprecated_member_use
                       String bgColorHex = item.selectedBackgroundColor.value
                           .toRadixString(16)
                           .substring(2)
                           .toUpperCase();
+
+                      // Para a exibição na tela (MANTÉM o formato detalhado)
+                      String color1Display =
+                          '${_getColorDisplay(item.selectedTileColor1)} (#$color1Hex)';
+                      String color2Display =
+                          '${_getColorDisplay(item.selectedTileColor2)} (#$color2Hex)';
+                      String color3Display =
+                          '${_getColorDisplay(item.selectedTileColor3)} (#$color3Hex)';
+                      String color4Display =
+                          '${_getColorDisplay(item.selectedTileColor4)} (#$color4Hex)';
+                      String bgColorDisplay =
+                          '${_getColorDisplay(item.selectedBackgroundColor)} (#$bgColorHex)';
 
                       return Card(
                         margin: const EdgeInsets.symmetric(
@@ -1574,23 +1797,33 @@ class CartScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
+                                    // Detalhes de todas as 4 cores + Fundo
                                     Text(
-                                      // ignore: unnecessary_brace_in_string_interps
-                                      'P1: #${color1Hex}',
+                                      'P1: $color1Display',
                                       style: TextStyle(
                                         color: item.selectedTileColor1,
                                       ),
                                     ),
                                     Text(
-                                      // ignore: unnecessary_brace_in_string_interps
-                                      'P2: #${color2Hex}',
+                                      'P2: $color2Display',
                                       style: TextStyle(
                                         color: item.selectedTileColor2,
                                       ),
                                     ),
                                     Text(
-                                      // ignore: unnecessary_brace_in_string_interps
-                                      'BG: #${bgColorHex}',
+                                      'P3: $color3Display',
+                                      style: TextStyle(
+                                        color: item.selectedTileColor3,
+                                      ),
+                                    ),
+                                    Text(
+                                      'P4: $color4Display',
+                                      style: TextStyle(
+                                        color: item.selectedTileColor4,
+                                      ),
+                                    ),
+                                    Text(
+                                      'BG: $bgColorDisplay',
                                       style: TextStyle(
                                         color: item.selectedBackgroundColor,
                                       ),
