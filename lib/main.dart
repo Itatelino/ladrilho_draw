@@ -106,19 +106,7 @@ class CartItem {
 }
 
 /// dados ambiente de simulação.
-class Environment {
-  final String name;
-  final IconData icon;
-  final Color color;
-  final String imageUrl;
-
-  Environment({
-    required this.name,
-    required this.icon,
-    required this.color,
-    required this.imageUrl,
-  });
-}
+// Environment model removed: a simulação de ambiente foi desativada.
 
 // --- Componente Visualização Ladrilho ---
 
@@ -438,35 +426,10 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     Tile(id: '5', name: 'Diagonal Simples', svgPath: 'assets/tiles/tile5.svg'),
   ];
 
-  final List<Environment> _availableEnvironments = [
-    Environment(
-      name: 'Cozinha',
-      icon: Icons.kitchen,
-      color: Colors.brown.shade400,
-      imageUrl: 'assets/cozinha.jpg',
-    ),
-    Environment(
-      name: 'Banheiro',
-      icon: Icons.bathtub,
-      color: Colors.blue.shade400,
-      imageUrl: 'assets/banheiro.jpg',
-    ),
-    Environment(
-      name: 'Varanda',
-      icon: Icons.deck,
-      color: Colors.green.shade400,
-      imageUrl: 'assets/varanda.jpg',
-    ),
-    Environment(
-      name: 'Piscina',
-      icon: Icons.pool,
-      color: Colors.cyan.shade400,
-      imageUrl: 'assets/piscina.jpg',
-    ),
-  ];
+  // Lista de ambientes removida (simulação de ambiente desativada)
 
   Tile? _selectedTile;
-  Environment? _selectedEnvironment;
+  // _selectedEnvironment removido
 
   // personalização
   Color _selectedTileColor1 = const Color.fromARGB(
@@ -517,7 +480,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     super.initState();
     _selectedTile = _availableTiles.first;
     _selectedTileSize = _availableSizes.first;
-    _selectedEnvironment = _availableEnvironments.first;
     _totalSqMetersController.addListener(_updateCalculatedQuantity);
     _updateCalculatedQuantity();
   }
@@ -781,18 +743,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
             _buildColorSelectors(),
             const SizedBox(height: 20),
             _buildColorPreview(),
-            _buildDivider(),
-
-            _buildSectionTitle('Visualização em 3D'),
-            const SizedBox(height: 15),
-            _build3DPreview(), // Visualização 3D c 4 cores simuladas
-            _buildDivider(),
-
-            _buildSectionTitle('Simulação de Ambiente'),
-            const SizedBox(height: 15),
-            _buildEnvironmentSelector(),
-            const SizedBox(height: 20),
-            _buildEnvironmentPreview(), // Simulação c imagem de fundo 3D
             _buildDivider(),
 
             _buildSectionTitle('Detalhes do Pedido'),
@@ -1060,268 +1010,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  Widget _build3DPreview() {
-    if (_selectedTile == null) {
-      return const Center(
-        child: Text('Selecione um ladrilho para ver a prévia 3D.'),
-      );
-    }
-
-    return Center(
-      child: Container(
-        width: 300,
-        height: 300,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.grey.shade100,
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 15,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // PAREDE
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 150,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.001)
-                    ..rotateX(0.0), // Simula a parede
-                  child: TilePatternRepeater(
-                    tile: _selectedTile!,
-                    tileColor1: _selectedTileColor1,
-                    tileColor2: _selectedTileColor2,
-                    tileColor3: _selectedTileColor3,
-                    tileColor4: _selectedTileColor4,
-                    bgColor: _selectedBackgroundColor,
-                    tileDisplaySize: 50.0,
-                    isWall: true,
-                  ),
-                ),
-              ),
-            ),
-            // Linha do canto (simula o rodapé/junta)
-            Positioned(
-              top: 148,
-              left: 0,
-              right: 0,
-              child: Container(height: 4, color: Colors.black38),
-            ),
-            // CHÃO
-            Positioned(
-              top: 150,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
-                child: Transform(
-                  alignment: Alignment.topCenter, // Inclina a partir do canto
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.002) // Aplica perspectiva
-                    ..rotateX(1.1), // Inclinação forte para simular o chão
-                  child: TilePatternRepeater(
-                    tile: _selectedTile!,
-                    tileColor1: _selectedTileColor1,
-                    tileColor2: _selectedTileColor2,
-                    tileColor3: _selectedTileColor3,
-                    tileColor4: _selectedTileColor4,
-                    bgColor: _selectedBackgroundColor,
-                    tileDisplaySize: 50.0,
-                    isWall: false,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnvironmentSelector() {
-    return Center(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ToggleButtons(
-          isSelected: _availableEnvironments
-              .map((env) => env.name == _selectedEnvironment?.name)
-              .toList(),
-          onPressed: (index) {
-            setState(() {
-              _selectedEnvironment = _availableEnvironments[index];
-            });
-          },
-          borderRadius: BorderRadius.circular(12),
-          borderWidth: 2,
-          selectedBorderColor: Theme.of(context).primaryColor,
-          selectedColor: Colors.white,
-          fillColor: Theme.of(context).primaryColor,
-          color: Theme.of(context).primaryColor,
-          // ignore: deprecated_member_use
-          splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
-          children: _availableEnvironments.map((env) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(env.icon, size: 24),
-                  const SizedBox(height: 4),
-                  Text(env.name, style: const TextStyle(fontSize: 14)),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnvironmentPreview() {
-    if (_selectedTile == null || _selectedEnvironment == null) {
-      return const Center(
-        child: Text('Selecione um ladrilho e um ambiente para a simulação 3D.'),
-      );
-    }
-
-    // Container pra simulação
-    return Center(
-      child: Card(
-        elevation: 10,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        margin: EdgeInsets.zero,
-        child: Container(
-          width: double.infinity,
-          height: 280,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black12),
-          ),
-          child: Stack(
-            children: [
-              // 1. fundo 3D do Ambiente
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    _selectedEnvironment!.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Center(
-                      child: Text(
-                        'Erro ao carregar a imagem local: ${_selectedEnvironment!.imageUrl}. Verifique seu pubspec.yaml.',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 2. Tiling de Parede (Simulação de perspectiva na parte superior)
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.85,
-                  child: ClipPath(
-                    clipper: _WallPerspectiveClipper(),
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.0005)
-                        ..rotateX(-0.1),
-                      child: TilePatternRepeater(
-                        tile: _selectedTile!,
-                        tileColor1: _selectedTileColor1,
-                        tileColor2: _selectedTileColor2,
-                        tileColor3: _selectedTileColor3,
-                        tileColor4: _selectedTileColor4,
-                        bgColor: _selectedBackgroundColor,
-                        tileDisplaySize: 30.0,
-                        isWall: true,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 3. Tiling de Chão (Simulação de perspectiva na parte inferior)
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.85,
-                  child: ClipPath(
-                    clipper: _FloorPerspectiveClipper(),
-                    child: Transform(
-                      alignment: Alignment.topCenter,
-                      transform: Matrix4.identity()
-                        ..setEntry(3, 2, 0.002)
-                        ..rotateX(1.1),
-                      child: TilePatternRepeater(
-                        tile: _selectedTile!,
-                        tileColor1: _selectedTileColor1,
-                        tileColor2: _selectedTileColor2,
-                        tileColor3: _selectedTileColor3,
-                        tileColor4: _selectedTileColor4,
-                        bgColor: _selectedBackgroundColor,
-                        tileDisplaySize: 30.0,
-                        isWall: false,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // 4. Overlay d Texto (p identificação)
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  margin: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
-                    color: _selectedEnvironment!.color.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _selectedEnvironment!.icon,
-                        size: 24,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _selectedEnvironment!.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Visualização 3D e seletores de ambiente removidos.
 
   Widget _buildDimensionsSelector() {
     return Column(
@@ -1469,48 +1158,6 @@ class _ColorPickerButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// criar forma de chão em perspectiva (trapézio inferior).
-class _FloorPerspectiveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    // Ponto 1: Canto inferior esquerdo
-    path.moveTo(0, size.height);
-    // Ponto 2: Canto inferior direito
-    path.lineTo(size.width, size.height);
-    // Ponto 3: Ponto de perspectiva superior direito (80% da largura, 35% da altura)
-    path.lineTo(size.width * 0.85, size.height * 0.35);
-    // Ponto 4: Ponto de perspectiva superior esquerdo (15% da largura, 35% da altura)
-    path.lineTo(size.width * 0.15, size.height * 0.35);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
-}
-
-/// criar forma de parede em perspectiva (trapézio superior).
-class _WallPerspectiveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    // Ponto 1: Canto superior esquerdo
-    path.moveTo(0, 0);
-    // Ponto 2: Canto superior direito
-    path.lineTo(size.width, 0);
-    // Ponto 3: Ponto de perspectiva inferior direito (85% da largura, 35% da altura)
-    path.lineTo(size.width * 0.85, size.height * 0.35);
-    // Ponto 4: Ponto de perspectiva inferior esquerdo (15% da largura, 35% da altura)
-    path.lineTo(size.width * 0.15, size.height * 0.35);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 // --- (Pedido) ---
@@ -1867,7 +1514,7 @@ class CartScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                // Botão de Enviar Pedido WhatsApp
+                // Botão de Enviar Pedido por WhatsApp
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton.icon(

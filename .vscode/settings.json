@@ -1,4 +1,6 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
-    "cmake.sourceDirectory": "C:/Users/dEV_cODE/Documents/GitHub/ladrilho_draw/linux/flutter"
+  "editor.inlineSuggest.enabled": true,
+  "github.copilot.enable": {
+    "*": true
+  }
 }
