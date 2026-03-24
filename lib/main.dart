@@ -69,7 +69,7 @@ class TileShopApp extends StatelessWidget {
 
 // --- Modelos de Dados ---
 
-/// dados para um ladrilho.
+/// dados ladrilho.
 class Tile {
   final String id;
   final String name;
@@ -78,7 +78,7 @@ class Tile {
   Tile({required this.id, required this.name, required this.svgPath});
 }
 
-/// dados para um item no carrinho de compras.
+/// dados item carrinho de compras.
 class CartItem {
   final Tile tile;
   final Color selectedTileColor1;
@@ -105,7 +105,7 @@ class CartItem {
   });
 }
 
-/// dados para um ambiente de simulação.
+/// dados ambiente de simulação.
 class Environment {
   final String name;
   final IconData icon;
@@ -120,9 +120,9 @@ class Environment {
   });
 }
 
-// --- Componente de Visualização do Ladrilho ---
+// --- Componente Visualização Ladrilho ---
 
-/// repete um ladrilho em uma grade para simulação.
+/// repete ladrilho numa grade para simulação.
 class TilePatternRepeater extends StatelessWidget {
   final Tile tile;
   final Color tileColor1;
@@ -131,7 +131,7 @@ class TilePatternRepeater extends StatelessWidget {
   final Color tileColor4;
   final Color bgColor;
   final double tileDisplaySize;
-  final bool isWall; // diferenciar rejunte em parede/chão
+  final bool isWall; // diferenciar rejunte parede/chão
 
   const TilePatternRepeater({
     required this.tile,
@@ -166,17 +166,17 @@ class TilePatternRepeater extends StatelessWidget {
           crossAxisSpacing: isWall ? 0.5 : 1.0,
         ),
         itemBuilder: (context, index) {
-          // P1: Cor principal do SVG
-          // P3: cor de fundo de cada ladrilho individual na grade
-          // P4: cor de borda de cada ladrilho individual na grade
+          // P1: Cor principal
+          // P3: cor fundo
+          // P4: cor borda
 
           final useP4Border = index % 2 == 0;
 
           return Container(
             decoration: BoxDecoration(
-              // Simula o rejunte
+              // Simula rejunte
               border: Border.all(color: groutColor, width: isWall ? 0.5 : 1.0),
-              // Simula a borda do ladrilho com P4
+              // Simula borda do ladrilho com P4
               color: tileColor3, // Fundo individual do ladrilho usa P3
             ),
             child: Container(
@@ -204,9 +204,9 @@ class TilePatternRepeater extends StatelessWidget {
   }
 }
 
-// --- Painel Inferior de Seleção de Cor RGB (Não-Bloqueante) ---
+// --- Painel Inferior de Seleção de Cor ---
 
-/// Lista de sugestões de cores para a paleta rápida.
+/// Lista de sugestões de cores.
 final List<Color> _paletteSuggestions = [
   Colors.white,
   Colors.black,
@@ -220,7 +220,7 @@ final List<Color> _paletteSuggestions = [
   const Color(0xFF6A1B9A), // Roxo
 ];
 
-/// Painel inferior para seleção de cor usando sliders RGB e paletas.
+/// Painel inferior seleção de cor.
 Future<Color?> showColorPickerSheet(
   BuildContext context,
   Color initialColor,
@@ -258,7 +258,7 @@ Future<Color?> showColorPickerSheet(
                 ),
                 const SizedBox(height: 15),
 
-                // Prévia da cor selecionada e código HEX
+                // Prévia da cor
                 Row(
                   children: [
                     Container(
@@ -326,7 +326,7 @@ Future<Color?> showColorPickerSheet(
                 ),
                 const SizedBox(height: 15),
 
-                // Sliders RGB
+                // Sliders
                 ..._buildColorSlider(
                   'Vermelho (R)',
                   // ignore: deprecated_member_use
@@ -388,7 +388,7 @@ Future<Color?> showColorPickerSheet(
   );
 }
 
-/// auxiliar para construir os sliders de cor.
+/// auxiliar construir os sliders de cor.
 List<Widget> _buildColorSlider(
   String label,
   double currentValue,
@@ -575,7 +575,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Exibe uma mensagem na parte inferior da tela (SnackBar).
+  /// Exibe uma mensagem na parte inferior.
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -588,7 +588,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  /// Adiciona o ladrilho configurado ao carrinho.
+  /// Adiciona ladrilho ao carrinho.
   void _addToCart() {
     if (_selectedTile == null) {
       _showMessage('Por favor, selecione um ladrilho.');
@@ -653,7 +653,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  /// Abre o painel de seleção de cor para P1.
+  /// Abre painel seleção de cor para P1.
   void _pickTileColor1() async {
     final newColor = await showColorPickerSheet(
       context,
@@ -667,7 +667,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para P2.
+  /// Abre painel seleção de cor para P2.
   void _pickTileColor2() async {
     final newColor = await showColorPickerSheet(
       context,
@@ -681,7 +681,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para P3.
+  /// Abre painel seleção de cor para P3.
   void _pickTileColor3() async {
     final newColor = await showColorPickerSheet(
       context,
@@ -695,7 +695,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para P4.
+  /// Abre painel seleção de cor para P4.
   void _pickTileColor4() async {
     final newColor = await showColorPickerSheet(
       context,
@@ -709,7 +709,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     }
   }
 
-  /// Abre o painel de seleção de cor para BG.
+  /// Abre painel seleção de cor.
   void _pickBackgroundColor() async {
     final newColor = await showColorPickerSheet(
       context,
@@ -785,14 +785,14 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
             _buildSectionTitle('Visualização em 3D'),
             const SizedBox(height: 15),
-            _build3DPreview(), // Visualização 3D aprimorada com 4 cores simuladas
+            _build3DPreview(), // Visualização 3D c 4 cores simuladas
             _buildDivider(),
 
             _buildSectionTitle('Simulação de Ambiente'),
             const SizedBox(height: 15),
             _buildEnvironmentSelector(),
             const SizedBox(height: 20),
-            _buildEnvironmentPreview(), // Simulação com imagem de fundo 3D
+            _buildEnvironmentPreview(), // Simulação c imagem de fundo 3D
             _buildDivider(),
 
             _buildSectionTitle('Detalhes do Pedido'),
@@ -869,7 +869,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               bool isSelected = _selectedTile?.id == tile.id;
 
               return GestureDetector(
-                // Ao tocar, centraliza e seleciona
+                // centraliza e seleciona
                 onTap: () {
                   if (!isSelected) {
                     setState(() {
@@ -1009,7 +1009,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  // Widget para prévia individual
+  // Widget prévia individual
   Widget _buildColorPreview() {
     if (_selectedTile == null) {
       return const Center(
@@ -1034,10 +1034,10 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                // prévia usa P3 para simulação
+                // prévia usa P3 p simulação
                 color: _selectedTileColor3,
                 borderRadius: BorderRadius.circular(16),
-                // prévia usa P4 para simulação
+                // prévia usa P4 p simulação
                 border: Border.all(color: _selectedTileColor4, width: 3),
               ),
               child: SvgPicture.asset(
@@ -1284,7 +1284,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                 ),
               ),
 
-              // 4. Overlay de Texto (para identificação)
+              // 4. Overlay d Texto (p identificação)
               Align(
                 alignment: Alignment.topRight,
                 child: Container(
@@ -1387,7 +1387,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
   }
 }
 
-/// auxiliar para o botão de navegação do carrossel.
+/// auxiliar p o botão d navegação do carrossel.
 class _NavigationButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
@@ -1414,7 +1414,7 @@ class _NavigationButton extends StatelessWidget {
   }
 }
 
-/// auxiliar para o botão de seleção de cor.
+/// auxiliar p o botão de seleção de cor.
 class _ColorPickerButton extends StatelessWidget {
   final String title;
   final Color color;
@@ -1471,7 +1471,7 @@ class _ColorPickerButton extends StatelessWidget {
   }
 }
 
-/// criar a forma de chão em perspectiva (trapézio inferior).
+/// criar forma de chão em perspectiva (trapézio inferior).
 class _FloorPerspectiveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -1492,7 +1492,7 @@ class _FloorPerspectiveClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
-/// criar a forma de parede em perspectiva (trapézio superior).
+/// criar forma de parede em perspectiva (trapézio superior).
 class _WallPerspectiveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -1513,7 +1513,7 @@ class _WallPerspectiveClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
-// --- Cart Screen (Pedido) ---
+// --- (Pedido) ---
 
 class CartScreen extends StatelessWidget {
   final List<CartItem> cartItems;
@@ -1525,7 +1525,6 @@ class CartScreen extends StatelessWidget {
     required this.onRemoveItem,
   });
 
-  /// Mapeamento de cores comuns para nomes amigáveis em português (para o WhatsApp).
   final Map<int, String> _commonColorNames = const {
     // Valores baseados nas cores definidas em _paletteSuggestions
     0xFFFFFFFF: 'Branco',
@@ -1553,7 +1552,7 @@ class CartScreen extends StatelessWidget {
     }
   }
 
-  /// Retorna apenas o nome da cor ou o código HEX para a mensagem do WhatsApp.
+  /// Retorna nome da cor ou o código HEX pra mensagem do whats.
   String _getWhatsAppColorName(Color color) {
     // ignore: deprecated_member_use
     final hexCode = color.value.toRadixString(16).substring(2).toUpperCase();
@@ -1561,14 +1560,14 @@ class CartScreen extends StatelessWidget {
     final colorName = _commonColorNames[color.value];
 
     if (colorName != null) {
-      return colorName; // Ex: "Branco"
+      return colorName;
     } else {
-      // Se for personalizada, retorna apenas o código HEX como identificador
+      // personalizada retorna apenas o código HEX como identificador
       return '#$hexCode';
     }
   }
 
-  /// Exibe um diálogo de confirmação para remover um item.
+  /// Exibe diálogo confirmação remover um item.
   void _showConfirmationDialog(BuildContext context, CartItem item) {
     showDialog(
       context: context,
@@ -1603,7 +1602,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  /// Envia os detalhes do pedido via WhatsApp.
+  /// Envia detalhes pedido via WhatsApp.
   Future<void> _sendOrderViaWhatsApp(BuildContext context) async {
     if (cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1622,7 +1621,7 @@ class CartScreen extends StatelessWidget {
     for (int i = 0; i < cartItems.length; i++) {
       final item = cartItems[i];
 
-      // Obtém o nome da cor SIMPLIFICADO para a mensagem do WhatsApp
+      // Obtém nome da cor SIMPLIFICADO
       String color1Name = _getWhatsAppColorName(item.selectedTileColor1);
       String color2Name = _getWhatsAppColorName(item.selectedTileColor2);
       String color3Name = _getWhatsAppColorName(item.selectedTileColor3);
@@ -1797,7 +1796,7 @@ class CartScreen extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    // Detalhes de todas as 4 cores + Fundo
+                                    // Detalhes de todas as 4 cores + fundo
                                     Text(
                                       'P1: $color1Display',
                                       style: TextStyle(
@@ -1851,7 +1850,7 @@ class CartScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              // Botão de Remover
+                              // Botão Remover
                               IconButton(
                                 icon: const Icon(
                                   Icons.delete_forever,
@@ -1868,7 +1867,7 @@ class CartScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                // Botão de Enviar Pedido por WhatsApp
+                // Botão de Enviar Pedido WhatsApp
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: ElevatedButton.icon(
