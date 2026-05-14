@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X8 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="297mm" height="210mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 29700 21000"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#FFCC29;stroke-width:20}
+    .str1 {stroke:#F5874F;stroke-width:20}
+    .fil0 {fill:#FFCC29}
+    .fil1 {fill:#F5874F}
+   ]]>
+  </style>
+   <clipPath id="id0">
+    <rect x="7665" y="2785" width="15000" height="14611"/>
+   </clipPath>
+ </defs>
+ <g id="Capa_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g style="clip-path:url(#id0)">
+   <image id="_26.jpg" x="7665" y="2785" width="15000" height="14611" xlink:href="C34_Images\C34_ImgID1.png"/>
+  </g>
+  <rect class="fil0 str0" x="7665" y="2785" width="15000" height="14611"/>
+  <polygon class="fil1 str1" points="22665,2785 22665,17396 7665,17396 "/>
+  <polygon class="fil0 str0" points="9494,4566 20837,4566 9494,15615 "/>
+  <rect class="fil1 str1" x="9494" y="4566" width="11343" height="11049"/>
+  <polygon class="fil0 str0" points="20837,4566 20837,15615 9494,15615 "/>
+  <circle class="fil0 str0" cx="15165" cy="10090" r="2893"/>
+  <path class="fil1 str1" d="M17253 8098c1109,1150 1075,2981 -75,4090 -1150,1109 -2982,1075 -4090,-75 2082,-2008 2082,-2008 4165,-4015z"/>
+ </g>
+</svg>
