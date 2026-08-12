@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 void main() {
@@ -489,7 +488,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
           builder: (BuildContext ctx, StateSetter setState) {
             // Auxiliar para adicionar uma nova cor a um detalhe usando o
             // picker existente showColorPickerSheet.
-            Future<void> _addColor(String part) async {
+            Future<void> addColor(String part) async {
               final newColor = await showColorPickerSheet(
                 ctx,
                 Colors.white,
@@ -503,7 +502,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
             }
 
             // Remove uma cor específica de um detalhe
-            void _removeColor(String part, int index) {
+            void removeColor(String part, int index) {
               setState(() {
                 temp[part]?.removeAt(index);
                 if (temp[part] != null && temp[part]!.isEmpty) {
@@ -513,7 +512,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
             }
 
             // Adiciona um novo detalhe (part name) vazio
-            void _addDetail() {
+            void addDetail() {
               const defaultName = 'Detalhe';
               int i = 1;
               String candidate = defaultName;
@@ -541,7 +540,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
                       ),
                     ),
                     IconButton(
-                      onPressed: _addDetail,
+                      onPressed: addDetail,
                       icon: const Icon(Icons.playlist_add),
                       tooltip: 'Adicionar detalhe',
                     ),
@@ -579,7 +578,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
                                     Row(
                                       children: [
                                         IconButton(
-                                          onPressed: () => _addColor(part),
+                                          onPressed: () => addColor(part),
                                           icon: const Icon(Icons.add),
                                           tooltip: 'Adicionar cor',
                                         ),
@@ -609,7 +608,7 @@ Future<Map<String, List<Color>>?> showMultiColorPickerSheet(
                                             ? Colors.white
                                             : Colors.black,
                                       ),
-                                      onDeleted: () => _removeColor(part, i),
+                                      onDeleted: () => removeColor(part, i),
                                       onPressed: () async {
                                         // Permitir editar a cor existente
                                         final edited =
