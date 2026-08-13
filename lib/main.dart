@@ -129,6 +129,7 @@ class _SvgLayerColorMapper extends ColorMapper {
     String attributeName,
     Color color,
   ) {
+    // ignore: deprecated_member_use
     return replacementBySourceColor[color.value] ?? color;
   }
 }
@@ -752,7 +753,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     141,
     0,
   ); // P4 - Quaternária
-  Color _selectedBackgroundColor = const Color.fromARGB(
+  final Color _selectedBackgroundColor = const Color.fromARGB(
     255,
     235,
     244,
@@ -976,44 +977,12 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
       final replacement = useGrayFallback
           ? Colors.grey.shade600
           : (i < selectedLayers.length ? selectedLayers[i] : source);
+      // ignore: deprecated_member_use
       map[source.value] = replacement;
     }
     return map;
   }
 
-  void _pickLayerColor(int index) async {
-    if (_selectedTile == null) {
-      return;
-    }
-
-    final tileId = _selectedTile!.id;
-    final selectedLayers = _selectedLayerColorsByTileId[tileId];
-    if (selectedLayers == null || index >= selectedLayers.length) {
-      return;
-    }
-
-    final picked = await showColorPickerSheet(
-      context,
-      selectedLayers[index],
-      'Cor da camada ${index + 1}',
-    );
-    if (picked == null) {
-      return;
-    }
-
-    setState(() {
-      _selectedLayerColorsByTileId[tileId]![index] = picked;
-      if (index == 0) {
-        _selectedTileColor1 = picked;
-      } else if (index == 1) {
-        _selectedTileColor2 = picked;
-      } else if (index == 2) {
-        _selectedTileColor3 = picked;
-      } else if (index == 3) {
-        _selectedTileColor4 = picked;
-      }
-    });
-  }
 
   Future<int?> _detectLayerIndexFromPreviewTap(
     Offset localPosition,
@@ -1077,8 +1046,11 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
 
     for (int i = 0; i < selectedLayers.length; i++) {
       final Color color = selectedLayers[i];
+      // ignore: deprecated_member_use
       final int dr = color.red - r;
+      // ignore: deprecated_member_use
       final int dg = color.green - g;
+      // ignore: deprecated_member_use
       final int db = color.blue - b;
       final double distance = (dr * dr + dg * dg + db * db).toDouble();
 
@@ -1175,190 +1147,15 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  /// Abre painel seleção de cor para P1.
-  void _pickTileColor1() async {
-    final newColor = await showColorPickerSheet(
-      context,
-      _selectedTileColor1,
-      'Cor Principal',
-    );
-    if (newColor != null) {
-      setState(() {
-        _selectedTileColor1 = newColor;
-        final tileId = _selectedTile?.id;
-        if (tileId != null &&
-            _selectedLayerColorsByTileId.containsKey(tileId) &&
-            _selectedLayerColorsByTileId[tileId]!.isNotEmpty) {
-          _selectedLayerColorsByTileId[tileId]![0] = newColor;
-        }
-      });
-    }
-  }
 
-  /// Abre painel seleção de cor para P2.
-  void _pickTileColor2() async {
-    final newColor = await showColorPickerSheet(
-      context,
-      _selectedTileColor2,
-      'Cor Secundária',
-    );
-    if (newColor != null) {
-      setState(() {
-        _selectedTileColor2 = newColor;
-        final tileId = _selectedTile?.id;
-        if (tileId != null &&
-            _selectedLayerColorsByTileId.containsKey(tileId) &&
-            _selectedLayerColorsByTileId[tileId]!.length > 1) {
-          _selectedLayerColorsByTileId[tileId]![1] = newColor;
-        }
-      });
-    }
-  }
 
-  /// Abre painel seleção de cor para P3.
-  void _pickTileColor3() async {
-    final newColor = await showColorPickerSheet(
-      context,
-      _selectedTileColor3,
-      'Cor Terciária',
-    );
-    if (newColor != null) {
-      setState(() {
-        _selectedTileColor3 = newColor;
-        final tileId = _selectedTile?.id;
-        if (tileId != null &&
-            _selectedLayerColorsByTileId.containsKey(tileId) &&
-            _selectedLayerColorsByTileId[tileId]!.length > 2) {
-          _selectedLayerColorsByTileId[tileId]![2] = newColor;
-        }
-      });
-    }
-  }
 
-  /// Abre painel seleção de cor para P4.
-  void _pickTileColor4() async {
-    final newColor = await showColorPickerSheet(
-      context,
-      _selectedTileColor4,
-      'Cor Quaternária',
-    );
-    if (newColor != null) {
-      setState(() {
-        _selectedTileColor4 = newColor;
-        final tileId = _selectedTile?.id;
-        if (tileId != null &&
-            _selectedLayerColorsByTileId.containsKey(tileId) &&
-            _selectedLayerColorsByTileId[tileId]!.length > 3) {
-          _selectedLayerColorsByTileId[tileId]![3] = newColor;
-        }
-      });
-    }
-  }
 
-  /// Abre painel seleção de cor.
-  void _pickBackgroundColor() async {
-    final newColor = await showColorPickerSheet(
-      context,
-      _selectedBackgroundColor,
-      'Cor de Fundo',
-    );
-    if (newColor != null) {
-      setState(() {
-        _selectedBackgroundColor = newColor;
-      });
-    }
-  }
 
   // Ao tocar na prévia do ladrilho selecionado, abre apenas a seleção de cores.
-  void _onPreviewTap() async {
-    if (_selectedTile == null) {
-      return;
-    }
-
-    final tile = _selectedTile!;
-    final tileId = tile.id;
-    final selectedLayers = List<Color>.from(
-      _selectedLayerColorsByTileId[tileId] ?? <Color>[_selectedTileColor1],
-    );
-
-    final initialData = <String, List<Color>>{
-      for (int i = 0; i < selectedLayers.length; i++)
-        'Camada ${i + 1}': [selectedLayers[i]],
-      'Fundo': [_selectedBackgroundColor],
-    };
-
-    final updated = await showMultiColorPickerSheet(
-      context,
-      initialData,
-      tile.name,
-    );
-
-    if (updated == null) {
-      return;
-    }
-
-    setState(() {
-      final orderedKeys = updated.keys.where((k) => k.startsWith('Camada '));
-      final nextLayers = <Color>[];
-      for (final key in orderedKeys) {
-        final colors = updated[key];
-        if (colors != null && colors.isNotEmpty) {
-          nextLayers.add(colors.first);
-        }
-      }
-
-      if (nextLayers.isNotEmpty) {
-        _selectedLayerColorsByTileId[tileId] = nextLayers;
-        _selectedTileColor1 = nextLayers[0];
-        if (nextLayers.length > 1) _selectedTileColor2 = nextLayers[1];
-        if (nextLayers.length > 2) _selectedTileColor3 = nextLayers[2];
-        if (nextLayers.length > 3) _selectedTileColor4 = nextLayers[3];
-      }
-
-      final bg = updated['Fundo'];
-      if (bg != null && bg.isNotEmpty) {
-        _selectedBackgroundColor = bg.first;
-      }
-    });
-  }
 
   // Retorna a cor atual associada à parte escolhida.
-  Color _getCurrentColorForPart(String part) {
-    switch (part) {
-      case 'P1':
-        return _selectedTileColor1;
-      case 'P2':
-        return _selectedTileColor2;
-      case 'P3':
-        return _selectedTileColor3;
-      case 'P4':
-        return _selectedTileColor4;
-      case 'BG':
-      default:
-        return _selectedBackgroundColor;
-    }
-  }
 
-  void _setColorForPart(String part, Color color) {
-    switch (part) {
-      case 'P1':
-        _selectedTileColor1 = color;
-        break;
-      case 'P2':
-        _selectedTileColor2 = color;
-        break;
-      case 'P3':
-        _selectedTileColor3 = color;
-        break;
-      case 'P4':
-        _selectedTileColor4 = color;
-        break;
-      case 'BG':
-      default:
-        _selectedBackgroundColor = color;
-        break;
-    }
-  }
 
   // Mostra um painel lateral compacto próximo à prévia com seleção
   // de camada e cor. Retorna camada+cor selecionadas ou null.
@@ -1477,6 +1274,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                               spacing: 6,
                               runSpacing: 6,
                               children: _paletteSuggestions.map((c) {
+                                // ignore: deprecated_member_use
                                 final selected = currentColor.value == c.value;
                                 return GestureDetector(
                                   onTap: () {
@@ -1592,6 +1390,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                                 child: Column(
                                   children: [
                                     Slider(
+                                      // ignore: deprecated_member_use
                                       value: draftCustomColor.red.toDouble(),
                                       min: 0,
                                       max: 255,
@@ -1604,6 +1403,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                                       },
                                     ),
                                     Slider(
+                                      // ignore: deprecated_member_use
                                       value: draftCustomColor.green.toDouble(),
                                       min: 0,
                                       max: 255,
@@ -1616,6 +1416,7 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
                                       },
                                     ),
                                     Slider(
+                                      // ignore: deprecated_member_use
                                       value: draftCustomColor.blue.toDouble(),
                                       min: 0,
                                       max: 255,
@@ -1923,46 +1724,6 @@ class _TileShopHomePageState extends State<TileShopHomePage> {
     );
   }
 
-  Widget _buildColorSelectors() {
-    final tile = _selectedTile;
-    final layerColors = tile == null
-        ? const <Color>[]
-        : (_selectedLayerColorsByTileId[tile.id] ?? const <Color>[]);
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          ...List.generate(layerColors.length, (index) {
-            return Row(
-              children: [
-                _ColorPickerButton(
-                  title: 'Camada ${index + 1}',
-                  color: layerColors[index],
-                  onTap: () => _pickLayerColor(index),
-                ),
-                const SizedBox(width: 20),
-              ],
-            );
-          }),
-          if (layerColors.isEmpty)
-            _ColorPickerButton(
-              title: 'Principal',
-              color: _selectedTileColor1,
-              onTap: _pickTileColor1,
-            ),
-          if (layerColors.isEmpty) const SizedBox(width: 20),
-          _ColorPickerButton(
-            title: 'Fundo',
-            color: _selectedBackgroundColor,
-            onTap: _pickBackgroundColor,
-          ),
-        ],
-      ),
-    );
-  }
 
   // Widget prévia individual
   Widget _buildColorPreview() {
@@ -2119,6 +1880,7 @@ class _NavigationButton extends StatelessWidget {
 }
 
 /// auxiliar p o botão de seleção de cor.
+// ignore: unused_element
 class _ColorPickerButton extends StatelessWidget {
   final String title;
   final Color color;
